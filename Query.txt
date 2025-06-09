@@ -1,0 +1,208 @@
+CUSTOMER TABLE📃:
+mysql> select * from customers;
++----+--------------------+---------------------+-----------------+
+| id | name               | email               | address         |
++----+--------------------+---------------------+-----------------+
+|  1 | Sujith Sudalaimani | sujith@gmail.com    | 6e/1 1st street |
+|  2 | Saai D             | saai@gmail.com      | new colony      |
+|  3 | shailesh M         | shailesh@gmail.com  | kk nagar        |
+|  4 | Aishvarya S        | Aishvarya@gmail.com | sholinganalur   |
+|  5 | Shivaani M         | shivaani@gmail.com  | Maduravoyal     |
++----+--------------------+---------------------+-----------------+
+
+PRODUCTS TABLE📃:
+mysql> select * from products;
++----+-----------+-------+---------------------------+
+| id | name      | price | description               |
++----+-----------+-------+---------------------------+
+|  1 | Product A | 25.00 | Description for Product A |
+|  2 | Product B | 35.50 | Description for product B |
+|  3 | Product C | 50.00 | Decription for product C  |
+|  4 | Product D | 45.00 | Description for Product D |
+|  5 | Product E | 60.00 | Description for product E |
++----+-----------+-------+---------------------------+
+
+ORDER SUMMARY TABLE📃:
+mysql> select * from orders;
++----+-------------+------------+--------------+
+| id | customer_id | order_date | total_amount |
++----+-------------+------------+--------------+
+|  1 |           1 | 2025-06-04 |       100.00 |
+|  2 |           2 | 2025-05-30 |       200.00 |
+|  3 |           3 | 2025-04-30 |        80.00 |
+|  4 |           4 | 2025-05-25 |       150.00 |
+|  5 |           5 | 2025-05-10 |       180.00 |
++----+-------------+------------+--------------+
+
+
+
+QUERIES📝
+A. Retrieve all customers who have placed an order in the last 30 days.
+
+mysql> SELECT DISTINCT c.* //here i have used c (alias) to refer table-customer
+    -> FROM customers c
+    -> JOIN orders o ON c.id = o.customer_id
+    -> WHERE o.order_date >= CURDATE() - INTERVAL 30 DAY;
++----+--------------------+---------------------+-----------------+
+| id | name               | email               | address         |
++----+--------------------+---------------------+-----------------+
+|  1 | Sujith Sudalaimani | sujith@gmail.com    | 6e/1 1st street |
+|  2 | Saai D             | saai@gmail.com      | new colony      |
+|  4 | Aishvarya S        | Aishvarya@gmail.com | sholinganalur   |
+|  5 | Shivaani M         | shivaani@gmail.com  | Maduravoyal     |
++----+--------------------+---------------------+-----------------+
+
+B.Get the total amount of all orders placed by each customer.
+
+mysql> SELECT c.name, SUM(o.total_amount) AS total_spent
+    -> FROM customers c
+    -> JOIN orders o ON c.id = o.customer_id
+    -> GROUP BY c.id;
++--------------------+-------------+
+| name               | total_spent |
++--------------------+-------------+
+| Sujith Sudalaimani |      100.00 |
+| Saai D             |      200.00 |
+| shailesh M         |       80.00 |
+| Aishvarya S        |      150.00 |
+| Shivaani M         |      180.00 |
++--------------------+-------------+
+
+C.Update the price of Product C to 45.00.
+
+mysql> UPDATE products
+    -> SET price = 45.00
+    -> WHERE name = 'Product C';
+Query OK, 1 row affected (0.01 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> select * from products;
++----+-----------+-------+---------------------------+
+| id | name      | price | description               |
++----+-----------+-------+---------------------------+
+|  1 | Product A | 25.00 | Description for Product A |
+|  2 | Product B | 35.50 | Description for product B |
+|  3 | Product C | 45.00 | Decription for product C  |
+|  4 | Product D | 45.00 | Description for Product D |
+|  5 | Product E | 60.00 | Description for product E |
++----+-----------+-------+---------------------------+
+
+D.Add a new column discount to the products table.
+
+mysql> ALTER TABLE products
+    -> ADD discount DECIMAL(5,2) DEFAULT 0.00;
+Query OK, 0 rows affected (0.04 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> select * from products;
++----+-----------+-------+---------------------------+----------+
+| id | name      | price | description               | discount |
++----+-----------+-------+---------------------------+----------+
+|  1 | Product A | 25.00 | Description for Product A |     0.00 |
+|  2 | Product B | 35.50 | Description for product B |     0.00 |
+|  3 | Product C | 45.00 | Decription for product C  |     0.00 |
+|  4 | Product D | 45.00 | Description for Product D |     0.00 |
+|  5 | Product E | 60.00 | Description for product E |     0.00 |
++----+-----------+-------+---------------------------+----------+
+
+E.Retrieve the top 3 products with the highest price.
+
+mysql> SELECT *
+    -> FROM products
+    -> ORDER BY price DESC
+    -> LIMIT 3;
++----+-----------+-------+---------------------------+----------+
+| id | name      | price | description               | discount |
++----+-----------+-------+---------------------------+----------+
+|  5 | Product E | 60.00 | Description for product E |     0.00 |
+|  3 | Product C | 45.00 | Decription for product C  |     0.00 |
+|  4 | Product D | 45.00 | Description for Product D |     0.00 |
++----+-----------+-------+---------------------------+----------+
+
+F.Get the names of customers who have ordered Product A.
+
+
+mysql> SELECT DISTINCT C.name
+    -> FROM customers c
+    -> JOIN orders o ON c.id = o.customer_id
+    -> JOIN orders_items oi ON o.id = oi.order_id
+    -> JOIN products p ON oi.product_id = p.id
+    -> WHERE p.name = 'Product A';
++--------------------+
+| name               |
++--------------------+
+| Sujith Sudalaimani |
+| Saai D             |
++--------------------+
+
+F.Join the orders and customers tables to retrieve the customer's name and order date for each order. 
+
+mysql> SELECT c.name AS customer_name, o.order_date
+    -> FROM orders o
+    -> JOIN customers c ON o.customer_id = c.id;
++--------------------+------------+
+| customer_name      | order_date |
++--------------------+------------+
+| Sujith Sudalaimani | 2025-06-04 |
+| Saai D             | 2025-05-30 |
+| shailesh M         | 2025-04-30 |
+| Aishvarya S        | 2025-05-25 |
+| Shivaani M         | 2025-05-10 |
++--------------------+------------+
+
+G.Retrieve the orders with a total amount greater than 150.00.
+
+mysql> SELECT *
+    -> FROM orders
+    -> WHERE total_amount > 150.00;
++----+-------------+------------+--------------+
+| id | customer_id | order_date | total_amount |
++----+-------------+------------+--------------+
+|  2 |           2 | 2025-05-30 |       200.00 |
+|  5 |           5 | 2025-05-10 |       180.00 |
++----+-------------+------------+--------------+
+
+H.Normalize the database by creating a separate table for order items and updating the 
+orders table to reference the order_items table.
+
+mysql> SELECT
+    ->     o.id AS order_id,
+    ->     c.name AS customer_name,
+    ->     o.order_date,
+    ->     SUM(p.price * oi.quantity) AS total_amount
+    -> FROM orders o
+    -> JOIN customers c ON o.customer_id = c.id
+    -> JOIN orders_items oi ON o.id = oi.order_id
+    -> JOIN products p ON oi.product_id = p.id
+    -> GROUP BY o.id;
++----------+--------------------+------------+--------------+
+| order_id | customer_name      | order_date | total_amount |
++----------+--------------------+------------+--------------+
+|        1 | Sujith Sudalaimani | 2025-06-04 |        85.50 |
+|        2 | Saai D             | 2025-05-30 |        25.00 |
+|        3 | shailesh M         | 2025-04-30 |        45.00 |
++----------+--------------------+------------+--------------+
+
+
+I.Retrieve the average total of all orders.
+
+mysql> SELECT
+    ->     AVG(order_total) AS average_order_total
+    -> FROM (
+    ->     SELECT
+    ->         o.id AS order_id,
+    ->         SUM(p.price * oi.quantity) AS order_total
+    ->     FROM orders o
+    ->     JOIN orders_items oi ON o.id = oi.order_id
+    ->     JOIN products p ON oi.product_id = p.id
+    ->     GROUP BY o.id
+    -> ) AS totals;
++---------------------+
+| average_order_total |
++---------------------+
+|           51.833333 |
++---------------------+
+
+
+
+
